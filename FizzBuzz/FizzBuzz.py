@@ -21,7 +21,7 @@ def check_m(value):
 
 
 def get_commandline_arguments():
-    parser = argparse.ArgumentParser(description='A FizzBuzz implementation for numbers falling in range (0, 10000')
+    parser = argparse.ArgumentParser(description='A FizzBuzz implementation for numbers falling in range (0, 10000)')
     parser.add_argument('n', type=check_n,
                         help='defines from which number the FizzBuzz should start')
     parser.add_argument('m', type=check_m,
