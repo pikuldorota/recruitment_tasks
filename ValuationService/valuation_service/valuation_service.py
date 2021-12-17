@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 import os
 import pandas as pd
 
@@ -77,15 +78,22 @@ def get_commandline_arguments():
 
 
 def add_total_price(data):
-    pass
+    data['total_price'] = data.price * data.quantity
 
 
 def convert_currency_to_PLN(data, currency):
-    pass
+    currency_dict = {row['currency']: row['ratio'] for _, row in currency.iterrows()}
+    print(currency_dict)
+    for curr in data['currency'].unique():
+        if not pd.isna(curr) and (curr not in currency_dict or pd.isna(currency_dict[curr])):
+            logging.error('Ratio for currency was not found. This matching will be omitted.')
+            return False
+    data['price'] = data.apply(lambda row: row['price'] if pd.isna(row['currency']) else round(row['price'] / currency_dict[row['currency']], 2), axis=1)
+    data['currency'] = data.apply(lambda row: row['currency'] if pd.isna(row['price']) or pd.isna(row['currency']) else 'PLN', axis=1)
 
 
 def check_if_all_same_currency(data):
-    pass
+    return len(data['currency'].unique()) == 1
 
 
 def get_required_data(matching, data):

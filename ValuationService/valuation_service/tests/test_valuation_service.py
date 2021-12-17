@@ -99,11 +99,9 @@ class ChangingCSVTestCase(unittest.TestCase):
         data = pd.read_csv('tests_files/valid_data.csv')
         currency = pd.read_csv('tests_files/currencies_empty_cells.csv')
         convert_currency_to_PLN(data, currency)
-        converted_data = pd.read_csv('tests_files/valid_data_converted_invalid_currency.csv')
-        assert data.equals(converted_data)
-        with self.assertLogs('val') as cm:
-            logging.getLogger('val').error('Ratio for currency was not found.')
-        self.assertEqual(cm.output, ['ERROR:val:Ratio for currency was not found.'])
+        with self.assertLogs('root') as cm:
+            logging.getLogger('root').error('Ratio for currency was not found. This matching will be omitted.')
+        self.assertEqual(cm.output, ['ERROR:root:Ratio for currency was not found. This matching will be omitted.'])
 
     def test_convert_currency_to_PLN_empty_cells(self):
         data = pd.read_csv('tests_files/data_empty_cells.csv')
@@ -111,9 +109,9 @@ class ChangingCSVTestCase(unittest.TestCase):
         convert_currency_to_PLN(data, currency)
         converted_data = pd.read_csv('tests_files/invalid_data_converted.csv')
         assert data.equals(converted_data)
-        with self.assertLogs('val') as cm:
-            logging.getLogger('val').error('Not all data has required info. Incomplete rows will be omitted.')
-        self.assertEqual(cm.output, ['ERROR:val:Not all data has required info. Incomplete rows will be omitted.'])
+        with self.assertLogs('root') as cm:
+            logging.getLogger('root').error('Not all data has required info. Incomplete rows will be omitted.')
+        self.assertEqual(cm.output, ['ERROR:root:Not all data has required info. Incomplete rows will be omitted.'])
 
     @staticmethod
     def test_check_if_all_same_currency():
