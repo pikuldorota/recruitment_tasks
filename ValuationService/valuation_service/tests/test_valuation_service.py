@@ -5,25 +5,11 @@ import pandas as pd
 
 
 class ArgumentsTestCase(unittest.TestCase):
-    def test_check_if_valid_path(self):
-        valid_paths = ['./sample.csv', '.\\\\sample.csv', './directory/sample.csv', '.\\\\directory\\\\sample.csv']
-        for path in valid_paths:
-            assert check_if_valid_path(path) == path
-
-        invalid_paths = ['.//sample.csv', '.\\sample.csv', './directory\\\\sample.csv',
-                         './directory/sample.csv/', '.', '']
-        for path in invalid_paths:
-            with self.assertRaises(argparse.ArgumentTypeError) as context:
-                check_if_valid_path(path)
-            self.assertTrue('Path "{}" is not a valid path'.format(path) in context.exception)
-
     def test_check_if_existing_path(self):
         existing_paths = ['tests_files/currencies_empty_cells.csv', 'tests_files/data_empty_cells.csv',
-                          'tests_files/empty_output.csv',
-                          'tests_files/matchings_causing_problems.csv', 'tests_files/nonempty_output.csv',
+                          'tests_files/empty_output.csv', 'tests_files/nonempty_output.csv',
                           'tests_files/valid_currencies.csv',
-                          'tests_files/valid_data.csv', 'tests_files/valid_matchings.csv',
-                          'tests_files/subdirectory/valid.csv']
+                          'tests_files/valid_data.csv', 'tests_files/valid_matchings.csv']
         for path in existing_paths:
             assert check_if_existing_path(path) == path
 
@@ -31,33 +17,33 @@ class ArgumentsTestCase(unittest.TestCase):
         for path in nonexistent_paths:
             with self.assertRaises(argparse.ArgumentTypeError) as context:
                 check_if_existing_path(path)
-            self.assertTrue('File "{}" does not exist'.format(path) in context.exception)
+            self.assertTrue('File "{}" does not exist'.format(path) in str(context.exception))
         pass
 
     def test_check_if_valid_data_file(self):
         valid_data_paths = ['tests_files/data_empty_cells.csv', 'tests_files/valid_data.csv']
         for path in valid_data_paths:
             assert check_if_valid_data_file(path) == path
-        invalid_data_paths = ['tests_files/empty_output.csv', 'tests_files/matchings_causing_problems.csv',
+        invalid_data_paths = ['tests_files/empty_output.csv', 'tests_files/valid_matchings.csv',
                               'tests_files/valid_currencies.csv']
         for path in invalid_data_paths:
             with self.assertRaises(argparse.ArgumentTypeError) as context:
                 check_if_valid_data_file(path)
-            self.assertTrue('File "{}" is not of valid data format'.format(path) in context.exception)
+            self.assertTrue('File "{}" is not of valid data format'.format(path) in  str(context.exception))
 
     def test_check_if_valid_currencies_file(self):
         valid_currencies_paths = ['tests_files/currencies_empty_cells.csv', 'tests_files/valid_currencies.csv']
         for path in valid_currencies_paths:
             assert check_if_valid_currencies_file(path) == path
-        invalid_currencies_paths = ['tests_files/empty_output.csv', 'tests_files/matchings_causing_problems.csv',
+        invalid_currencies_paths = ['tests_files/empty_output.csv', 'tests_files/valid_matchings.csv',
                                     'tests_files/valid_data.csv']
         for path in invalid_currencies_paths:
             with self.assertRaises(argparse.ArgumentTypeError) as context:
                 check_if_valid_currencies_file(path)
-            self.assertTrue('File "{}" is not of valid currency format'.format(path) in context.exception)
+            self.assertTrue('File "{}" is not of valid currency format'.format(path) in str(context.exception))
 
     def test_check_if_valid_matching_file(self):
-        valid_matching_paths = ['tests_files/matchings_causing_problems.csv', 'tests_files/valid_matchings.csv']
+        valid_matching_paths = ['tests_files/valid_matchings.csv']
         for path in valid_matching_paths:
             assert check_if_valid_matching_file(path) == path
         invalid_matching_paths = ['tests_files/empty_output.csv', 'tests_files/currencies_empty_cells.csv',
@@ -65,19 +51,7 @@ class ArgumentsTestCase(unittest.TestCase):
         for path in invalid_matching_paths:
             with self.assertRaises(argparse.ArgumentTypeError) as context:
                 check_if_valid_matching_file(path)
-            self.assertTrue('File "{}" is not of valid matching format'.format(path) in context.exception)
-
-    def test_check_if_valid_output_file(self):
-        valid_output_paths = ['tests_files/empty_problems.csv', 'tests_files/sample.csv']
-        for path in valid_output_paths:
-            assert check_if_valid_output_file(path) == path
-        invalid_output_paths = ['tests_files/nonempty_output.csv', 'tests_files/currencies_empty_cells.csv',
-                                'tests_files/valid_currencies.csv']
-        for path in invalid_output_paths:
-            with self.assertRaises(FileExistsError) as context:
-                check_if_valid_output_file(path)
-            self.assertTrue('File "{}" already contains data. '
-                            'Choose different output file.'.format(path) in context.exception)
+            self.assertTrue('File "{}" is not of valid matching format'.format(path) in  str(context.exception))
 
 
 class SavingFileTestCase(unittest.TestCase):

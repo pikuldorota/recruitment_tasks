@@ -1,28 +1,61 @@
 #!/usr/bin/env python3
 import argparse
-
-
-def check_if_valid_path(path):
-    return path
+import os
+import pandas as pd
 
 
 def check_if_existing_path(path):
+    if not os.path.exists(path):
+        raise argparse.ArgumentTypeError('File "{}" does not exist'.format(path))
     return path
 
 
 def check_if_valid_data_file(path):
+    check_if_existing_path(path)
+
+    try:
+        data = pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        raise argparse.ArgumentTypeError('File "{}" is not of valid data format'.format(path)) from None
+
+    columns = ['id', 'price', 'currency', 'quantity', 'matching_id']
+    for column in columns:
+        if column not in data.columns:
+            raise argparse.ArgumentTypeError('File "{}" is not of valid data format'.format(path))
     return path
 
 
 def check_if_valid_currencies_file(path):
+    check_if_existing_path(path)
+
+    try:
+        currency = pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        raise argparse.ArgumentTypeError('File "{}" is not of valid currency format'.format(path)) from None
+    columns = ['currency', 'ratio']
+    for column in columns:
+        if column not in currency.columns:
+            raise argparse.ArgumentTypeError('File "{}" is not of valid currency format'.format(path))
     return path
 
 
 def check_if_valid_matching_file(path):
+    check_if_existing_path(path)
+
+    try:
+        matching = pd.read_csv(path)
+    except pd.errors.EmptyDataError:
+        raise argparse.ArgumentTypeError('File "{}" is not of valid matching format'.format(path)) from None
+    columns = ['matching_id', 'top_priced_count']
+    for column in columns:
+        if column not in matching.columns:
+            raise argparse.ArgumentTypeError('File "{}" is not of valid matching format'.format(path))
     return path
 
 
-def check_if_valid_output_file(path):
+def validate_that_output_file_is_empty_or_nonexistent(path):
+    if os.path.isfile(path) and os.path.getsize(path) > 0:
+        raise FileExistsError('File "{}" already contains data. Choose different output file.'.format(path))
     return path
 
 
@@ -38,9 +71,6 @@ def get_commandline_arguments():
     parser.add_argument('matching', type=check_if_valid_matching_file,
                         help='Path to csv file containing requirements for matching data. '
                              'It should have columns matching_id and top_priced_count.')
-    parser.add_argument('result_file', type=check_if_valid_output_file, default='top_products.csv',
-                        help='Path where output will be saved. Default is "top_products.csv". '
-                             'Path should either lead to an empty file or file should not yet exist.')
 
     args = parser.parse_args()
     return args
