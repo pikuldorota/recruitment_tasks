@@ -4,6 +4,7 @@ import logging
 import os
 import pandas as pd
 
+pd.options.mode.chained_assignment = None
 
 def check_if_existing_path(path):
     if not os.path.exists(path):
@@ -78,7 +79,7 @@ def get_commandline_arguments():
 
 
 def add_total_price(data):
-    data['total_price'] = data.price * data.quantity
+    data['total_price'] = data.apply(lambda row: row['price'] * row['quantity'], axis=1)
 
 
 def convert_currency_to_PLN(data, currency):
@@ -97,18 +98,16 @@ def check_if_all_same_currency(data):
 
 
 def get_required_data(data, matchings, currency):
-
     def process_row(matching_id, top_priced_count):
         if pd.isna(matching_id) or pd.isna(top_priced_count):
             logging.error('Matching misses data. Omitting this matching.')
             return
-
         matched_products = data.loc[data['matching_id'] == matching_id]
-        if not check_if_all_same_currency(matched_products):
-            return
-        if not convert_currency_to_PLN(data, currency):
-            return
 
+        if not check_if_all_same_currency(matched_products):
+            if not convert_currency_to_PLN(matched_products, currency):
+                return
+        add_total_price(matched_products)
         matched_products = matched_products.sort_values(by=['total_price'], ascending=False)
         top_products = matched_products.head(top_priced_count)
         row_dict = {'matching_id': matching_id,
@@ -131,3 +130,8 @@ def save_results(result, path="output.csv"):
 
 if __name__ == '__main__':
     cmd_args = get_commandline_arguments()
+    data = pd.read_csv(cmd_args.data)
+    matching = pd.read_csv(cmd_args.matching)
+    currencies = pd.read_csv(cmd_args.currencies)
+    result = get_required_data(data, matching, currencies)
+    save_results(result)

@@ -135,22 +135,26 @@ class ChangingCSVTestCase(unittest.TestCase):
 
     def test_get_required_data(self):
         valid_data = pd.DataFrame(
-            [(1, 2000, 'GBP', 2, 1, 4000), (3, 200, 'PLN', 1, 2, 200), (5, 30, 'GBP', 2, 1, 60),
-             (3, 300, 'PLN', 5, 2, 1500), (5, 500, 'GBP', 2, 1, 1000)],
-            columns=['id', 'price', 'currency', 'quantity', 'matching_id', 'total_price'])
+            [(1, 2000, 'GBP', 2, 1), (3, 200, 'PLN', 1, 2), (5, 30, 'GBP', 2, 1),
+             (3, 300, 'PLN', 5, 2), (5, 500, 'GBP', 2, 1)],
+            columns=['id', 'price', 'currency', 'quantity', 'matching_id'])
         matching = pd.DataFrame([(1, 1), (2, 2)], columns=['matching_id', 'top_priced_count'])
         currency = pd.read_csv("tests_files/valid_currencies.csv")
         data = get_required_data(valid_data, matching, currency)
         expected_data = pd.DataFrame([(1, 4000, 843.33, 'GBP', 2), (2, 1700, 250.00, 'PLN', 0)],
                                      columns=['matching_id', 'total_price', 'avg_price', 'currency',
                                               'ignored_products_count'])
+        print(data)
+        print(expected_data)
         assert data.equals(expected_data)
 
         matching = pd.DataFrame([(1, 30), (2, 2)], columns=['matching_id', 'top_priced_count'])
         data = get_required_data(valid_data, matching, currency)
-        expected_data = pd.DataFrame([(1, 5060, 351.39, 'PLN', 0), (2, 1700, 250, 'PLN', 0)],
+        expected_data = pd.DataFrame([(1, 5060, 843.33, 'GBP', 0), (2, 1700, 250, 'PLN', 0)],
                                      columns=['matching_id', 'total_price', 'avg_price', 'currency',
                                               'ignored_products_count'])
+        print(data)
+        print(expected_data)
         assert data.equals(expected_data)
 
         with self.assertLogs('val') as cm:
