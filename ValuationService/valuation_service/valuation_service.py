@@ -83,24 +83,48 @@ def add_total_price(data):
 
 def convert_currency_to_PLN(data, currency):
     currency_dict = {row['currency']: row['ratio'] for _, row in currency.iterrows()}
-    print(currency_dict)
     for curr in data['currency'].unique():
         if not pd.isna(curr) and (curr not in currency_dict or pd.isna(currency_dict[curr])):
             logging.error('Ratio for currency was not found. This matching will be omitted.')
             return False
     data['price'] = data.apply(lambda row: row['price'] if pd.isna(row['currency']) else round(row['price'] / currency_dict[row['currency']], 2), axis=1)
     data['currency'] = data.apply(lambda row: row['currency'] if pd.isna(row['price']) or pd.isna(row['currency']) else 'PLN', axis=1)
+    return True
 
 
 def check_if_all_same_currency(data):
     return len(data['currency'].unique()) == 1
 
 
-def get_required_data(matching, data):
-    pass
+def get_required_data(data, matchings, currency):
+
+    def process_row(matching_id, top_priced_count):
+        if pd.isna(matching_id) or pd.isna(top_priced_count):
+            logging.error('Matching misses data. Omitting this matching.')
+            return
+
+        matched_products = data.loc[data['matching_id'] == matching_id]
+        if not check_if_all_same_currency(matched_products):
+            return
+        if not convert_currency_to_PLN(data, currency):
+            return
+
+        matched_products = matched_products.sort_values(by=['total_price'], ascending=False)
+        top_products = matched_products.head(top_priced_count)
+        row_dict = {'matching_id': matching_id,
+                    'currency': matched_products['currency'].values[0],
+                    'total_price': top_products['total_price'].sum(),
+                    'avg_price': round(matched_products['price'].mean(), 2),
+                    'ignored_products_count': max(0, matched_products.shape[0] - top_priced_count)}
+        return row_dict
+
+    result = [process_row(matching_id, top) for matching_id, top in matchings.values]
+    result = pd.DataFrame([row for row in result if row is not None],
+                          columns=['matching_id', 'total_price', 'avg_price', 'currency', 'ignored_products_count'])
+    return result
 
 
-def save_results(result, path):
+def save_results(result, path="output.csv"):
     pass
 
 

@@ -2,6 +2,7 @@ import logging
 import unittest
 from ValuationService.valuation_service.valuation_service import *
 import pandas as pd
+import numpy as np
 
 
 class ArgumentsTestCase(unittest.TestCase):
@@ -129,19 +130,20 @@ class ChangingCSVTestCase(unittest.TestCase):
 
     def test_get_required_data(self):
         valid_data = pd.DataFrame(
-            [(1, 2000, 'GBP', 2, 1, 4000), (3, 200, 'PLN', 1, 2, 200), (5, 30, 'GBP', 2, 2, 60),
-             (3, 300, 'PLN', 1, 5, 1500), (5, 500, 'GBP', 2, 2, 1000)],
+            [(1, 2000, 'GBP', 2, 1, 4000), (3, 200, 'PLN', 1, 2, 200), (5, 30, 'GBP', 2, 1, 60),
+             (3, 300, 'PLN', 5, 2, 1500), (5, 500, 'GBP', 2, 1, 1000)],
             columns=['id', 'price', 'currency', 'quantity', 'matching_id', 'total_price'])
-        matching = pd.DataFrame([(1, 2), (2, 1)], columns=['matching_id', 'top_priced_count'])
-        data = get_required_data(valid_data, matching)
-        expected_data = pd.DataFrame([(1, 1700, 850, 'PLN', 0), (2, 4000, 1686.67, 'GBP', 2)],
+        matching = pd.DataFrame([(1, 1), (2, 2)], columns=['matching_id', 'top_priced_count'])
+        currency = pd.read_csv("tests_files/valid_currencies.csv")
+        data = get_required_data(valid_data, matching, currency)
+        expected_data = pd.DataFrame([(1, 4000, 843.33, 'GBP', 2), (2, 1700, 250.00, 'PLN', 0)],
                                      columns=['matching_id', 'total_price', 'avg_price', 'currency',
                                               'ignored_products_count'])
         assert data.equals(expected_data)
 
         matching = pd.DataFrame([(1, 30), (2, 2)], columns=['matching_id', 'top_priced_count'])
-        data = get_required_data(valid_data, matching)
-        expected_data = pd.DataFrame([(1, 1500, 850, 'PLN', 1), (2, 5000, 1686.67, 'GBP', 1)],
+        data = get_required_data(valid_data, matching, currency)
+        expected_data = pd.DataFrame([(1, 5060, 351.39, 'PLN', 0), (2, 1700, 250, 'PLN', 0)],
                                      columns=['matching_id', 'total_price', 'avg_price', 'currency',
                                               'ignored_products_count'])
         assert data.equals(expected_data)
@@ -150,8 +152,9 @@ class ChangingCSVTestCase(unittest.TestCase):
             logging.getLogger('val').error('Too many elements required. Counting all elements with matching_id.')
         self.assertEqual(cm.output, ['ERROR:val:Too many elements required. Counting all elements with matching_id.'])
 
-        matching = pd.DataFrame([('', 30), (2, '')], columns=['matching_id', 'top_priced_count'])
-        data = get_required_data(valid_data, matching)
+        matching = pd.DataFrame([(np.nan, 30), (2, np.nan)], columns=['matching_id', 'top_priced_count'])
+        print(matching)
+        data = get_required_data(valid_data, matching, currency)
         expected_data = pd.DataFrame([], columns=['matching_id', 'total_price', 'avg_price', 'currency',
                                                   'ignored_products_count'])
         assert data.equals(expected_data)
