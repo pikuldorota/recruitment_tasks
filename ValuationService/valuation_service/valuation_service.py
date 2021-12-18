@@ -125,7 +125,8 @@ def get_required_data(data, matchings, currency):
 
 
 def save_results(result, path="output.csv"):
-    pass
+    if validate_that_output_file_is_empty_or_nonexistent(path):
+        result.to_csv(path, index=False)
 
 
 if __name__ == '__main__':

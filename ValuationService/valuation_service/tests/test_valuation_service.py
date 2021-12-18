@@ -56,8 +56,8 @@ class ArgumentsTestCase(unittest.TestCase):
 
 
 class SavingFileTestCase(unittest.TestCase):
-    @staticmethod
-    def test_saving_file():
+
+    def test_saving_file(self):
         output_data = pd.DataFrame([(1, 2000, 201, 'GBP', 2), (3, 200, 21, 'EUR', 0), (5, 30, 21, 'GBP', 1)],
                                    columns=['matching_id', 'total_price', 'avg_price', 'currency',
                                             'ignored_products_count'])
@@ -67,6 +67,11 @@ class SavingFileTestCase(unittest.TestCase):
             save_results(output_data, path)
             saved_data = pd.read_csv(path)
             assert output_data.equals(saved_data)
+
+        path = "tests_files/nonempty_output.csv"
+        with self.assertRaises(FileExistsError) as context:
+            save_results(output_data, path)
+        self.assertTrue('File "{}" already contains data. Choose different output file.'.format(path) in str(context.exception))
 
 
 class ChangingCSVTestCase(unittest.TestCase):
