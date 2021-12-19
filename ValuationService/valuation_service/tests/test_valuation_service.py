@@ -1,4 +1,5 @@
 import logging
+import os
 import unittest
 from ValuationService.valuation_service.valuation_service import *
 import pandas as pd
@@ -57,13 +58,19 @@ class ArgumentsTestCase(unittest.TestCase):
 
 class SavingFileTestCase(unittest.TestCase):
 
+    _paths = ['tests_files/empty_output.csv', 'tests_files/nonexistent_output.csv']
+
+    def tearDown(self):
+        for path in self._paths:
+            os.remove(path)
+        open(self._paths[0], 'w').close()
+
     def test_saving_file(self):
         output_data = pd.DataFrame([(1, 2000, 201, 'GBP', 2), (3, 200, 21, 'EUR', 0), (5, 30, 21, 'GBP', 1)],
                                    columns=['matching_id', 'total_price', 'avg_price', 'currency',
                                             'ignored_products_count'])
 
-        paths = ['tests_files/empty_output.csv', 'tests_files/nonexistent_output.csv']
-        for path in paths:
+        for path in self._paths:
             save_results(output_data, path)
             saved_data = pd.read_csv(path)
             assert output_data.equals(saved_data)
