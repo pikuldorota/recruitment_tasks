@@ -12,7 +12,9 @@ pd.options.mode.chained_assignment = None
 def set_up_logger(level):
     file_handler = logging.FileHandler(filename='valuation_service.log')
     stream_handler = logging.StreamHandler(sys.stdout)
-    logging.basicConfig(handlers=[file_handler, stream_handler], level=level)
+    logging.basicConfig(handlers=[file_handler, stream_handler], level=level,
+                        format="%(asctime)s [%(levelname)s] valuation_service: %(message)s",
+                        datefmt='%Y-%m-%d %H:%M')
 
 
 def check_if_existing_path(path):

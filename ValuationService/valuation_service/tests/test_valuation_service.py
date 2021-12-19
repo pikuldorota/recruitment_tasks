@@ -97,9 +97,9 @@ class ChangingCSVTestCase(unittest.TestCase):
         assert 'total_price' in input_data
         data_with_total_price = pd.read_csv('tests_files/data_with_total_price_empty_cells.csv')
         assert input_data.equals(data_with_total_price)
-        with self.assertLogs('val') as cm:
-            logging.getLogger('val').error('Empty cells found in data file. The record will be omitted.')
-        self.assertEqual(cm.output, ['ERROR:val:Empty cells found in data file. The record will be omitted.'])
+        with self.assertLogs() as cm:
+            logging.getLogger().error('Empty cells found in data file. The record will be omitted.')
+        self.assertIn('Empty cells found in data file. The record will be omitted.', '\n'.join(cm.output))
 
     @staticmethod
     def test_convert_currency_to_PLN():
@@ -113,9 +113,9 @@ class ChangingCSVTestCase(unittest.TestCase):
         input_data = pd.read_csv('tests_files/valid_data.csv')
         currency = pd.read_csv('tests_files/currencies_empty_cells.csv')
         convert_currency_to_pln(input_data, currency)
-        with self.assertLogs('root') as cm:
-            logging.getLogger('root').error('Ratio for currency was not found. This matching will be omitted.')
-        self.assertEqual(cm.output, ['ERROR:root:Ratio for currency was not found. This matching will be omitted.'])
+        with self.assertLogs() as cm:
+            logging.getLogger().error('Ratio for currency was not found. This matching will be omitted.')
+        self.assertIn('Ratio for currency was not found. This matching will be omitted.', '\n'.join(cm.output))
 
     def test_convert_currency_to_PLN_empty_cells(self):
         input_data = pd.read_csv('tests_files/data_empty_cells.csv')
@@ -123,9 +123,9 @@ class ChangingCSVTestCase(unittest.TestCase):
         convert_currency_to_pln(input_data, currency)
         converted_data = pd.read_csv('tests_files/invalid_data_converted.csv')
         assert input_data.equals(converted_data)
-        with self.assertLogs('root') as cm:
-            logging.getLogger('root').error('Not all data has required info. Incomplete rows will be omitted.')
-        self.assertEqual(cm.output, ['ERROR:root:Not all data has required info. Incomplete rows will be omitted.'])
+        with self.assertLogs() as cm:
+            logging.getLogger().error('Not all data has required info. Incomplete rows will be omitted.')
+        self.assertIn('Not all data has required info. Incomplete rows will be omitted.', '\n'.join(cm.output))
 
     @staticmethod
     def test_check_if_all_same_currency():
@@ -152,8 +152,6 @@ class ChangingCSVTestCase(unittest.TestCase):
         expected_data = pd.DataFrame([(1, 4000, 843.33, 'GBP', 2), (2, 1700, 250.00, 'PLN', 0)],
                                      columns=['matching_id', 'total_price', 'avg_price', 'currency',
                                               'ignored_products_count'])
-        print(input_data)
-        print(expected_data)
         assert input_data.equals(expected_data)
 
         matching_frame = pd.DataFrame([(1, 30), (2, 2)], columns=['matching_id', 'top_priced_count'])
@@ -161,13 +159,11 @@ class ChangingCSVTestCase(unittest.TestCase):
         expected_data = pd.DataFrame([(1, 5060, 843.33, 'GBP', 0), (2, 1700, 250, 'PLN', 0)],
                                      columns=['matching_id', 'total_price', 'avg_price', 'currency',
                                               'ignored_products_count'])
-        print(input_data)
-        print(expected_data)
         assert input_data.equals(expected_data)
 
-        with self.assertLogs('val') as cm:
-            logging.getLogger('val').error('Too many elements required. Counting all elements with matching_id.')
-        self.assertEqual(cm.output, ['ERROR:val:Too many elements required. Counting all elements with matching_id.'])
+        with self.assertLogs() as cm:
+            logging.getLogger().error('Too many elements required. Counting all elements with matching_id.')
+        self.assertIn('Too many elements required. Counting all elements with matching_id.', '\n'.join(cm.output))
 
         matching_frame = pd.DataFrame([(np.nan, 30), (2, np.nan)], columns=['matching_id', 'top_priced_count'])
         print(matching_frame)
@@ -176,9 +172,9 @@ class ChangingCSVTestCase(unittest.TestCase):
                                                   'ignored_products_count'])
         assert input_data.equals(expected_data)
 
-        with self.assertLogs('val') as cm:
-            logging.getLogger('val').error('Matching misses data. Omitting this matching.')
-        self.assertEqual(cm.output, ['ERROR:val:Matching misses data. Omitting this matching.'])
+        with self.assertLogs() as cm:
+            logging.getLogger().error('Matching misses data. Omitting this matching.')
+        self.assertIn('Matching misses data. Omitting this matching.', '\n'.join(cm.output))
 
 
 if __name__ == '__main__':
