@@ -3,10 +3,10 @@ import argparse
 import logging
 import os
 import sys
-
 import pandas as pd
 
 pd.options.mode.chained_assignment = None
+_LOGGING_LEVEL = logging.INFO
 
 
 def set_up_logger(level):
@@ -149,7 +149,7 @@ def save_results(calculated_data, path="output.csv"):
 
 
 if __name__ == '__main__':
-    set_up_logger(logging.INFO)
+    set_up_logger(_LOGGING_LEVEL)
     cmd_args = get_commandline_arguments()
     logging.info("Reading the input csv files")
     data = pd.read_csv(cmd_args.data)
